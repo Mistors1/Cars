@@ -4,74 +4,56 @@ import lombok.AllArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.cars.model.User;
-import org.hibernate.Transaction;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @AllArgsConstructor
 public class UserRepository {
-    private final SessionFactory sf;
+    private final CrudRepository crudRepository;
 
     public User create(User user) {
-        try (Session session = sf.openSession()) {
-            session.save(user);
-            return user;
-        }
+        crudRepository.run(session -> session.persist(user));
+        return user;
     }
 
     public void update(User user) {
-        try (Session session = sf.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.createQuery("UPDATE User SET login = :login, password = :password WHERE id = :id")
-                    .setParameter("password", user.getPassword())
-                    .setParameter("login", user.getLogin())
-                    .setParameter("id", user.getId())
-                    .executeUpdate();
-            transaction.commit();
-        }
+        crudRepository.run(session -> session.merge(user));
     }
 
     public void delete(int userId) {
-        try (Session session = sf.openSession()) {
-            User user = session.get(User.class, userId);
-            if (user != null) {
-                session.beginTransaction();
-                session.delete(user);
-                session.getTransaction().commit();
-            }
-        }
+        crudRepository.run(
+                "delete from User where id = :fId",
+                Map.of("fId", userId)
+        );
     }
 
     public List<User> findAllOrderById() {
-        try (Session session = sf.openSession()) {
-            List<User> users = session.createQuery("FROM User ORDER BY id", User.class).list();
-            return users;
-        }
+        return crudRepository.query("from User order by id asc", User.class);
     }
 
     public Optional<User> findById(int userId) {
-        try (Session session = sf.openSession()) {
-            User user = session.get(User.class, userId);
-            return Optional.ofNullable(user);
-        }
+        return crudRepository.optional(
+                "from User where id = :fId", User.class,
+                Map.of("fId", userId)
+        );
     }
 
     public List<User> findByLikeLogin(String key) {
-        try (Session session = sf.openSession()) {
-            List<User> users = session.createQuery("FROM User WHERE login LIKE :key", User.class)
-                    .setParameter("key", "%" + key + "%")
-                    .list();
-            return users;
-        }
+        return crudRepository.query(
+                "from User where login like :fKey", User.class,
+                Map.of("fKey", "%" + key + "%")
+        );
     }
 
     public Optional<User> findByLogin(String login) {
-        try (Session session = sf.openSession()) {
-            User user = session.createQuery("FROM User WHERE login = :login", User.class)
-                    .setParameter("login", login)
-                    .uniqueResult();
-            return Optional.ofNullable(user);
-        }
+        return crudRepository.optional(
+                "from User where login = :fLogin", User.class,
+                Map.of("fLogin", login)
+        );
     }
 }
