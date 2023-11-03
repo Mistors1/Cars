@@ -19,5 +19,7 @@
         <mapping class="org.cars.model.Car" />
         <mapping class="org.cars.model.Engine" />
         <mapping class="org.cars.model.Owner" />
+        <mapping class="org.cars.model.File" />
+
     </session-factory>
 </hibernate-configuration>

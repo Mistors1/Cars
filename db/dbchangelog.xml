@@ -15,6 +15,8 @@
     <include file="scripts/008_ddl_create_owners_table.sql" relativeToChangelogFile="true"/>
     <include file="scripts/009_ddl_create_history_owners_table.sql" relativeToChangelogFile="true"/>
     <include file="scripts/010_ddl_create_history_table.sql" relativeToChangelogFile="true"/>
+    <include file="scripts/011_ddl_create_files_table.sql" relativeToChangelogFile="true"/>
+
 
 
 
